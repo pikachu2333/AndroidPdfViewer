@@ -37,6 +37,6 @@ ext {
             minSdk      : 21,
             targetSdk   : 35,
             compileSdk  : 35,
-            versionName : '3.2.0-beta05'
+            versionName : '3.2.0-beta06'
     ]
 }
