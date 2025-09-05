@@ -19,7 +19,8 @@ Licensed under Apache License 2.0.
 #
 
 ## 3.2.0-beta06 (05 Sep 2025)
-* resource fix 
+* resource fix
+* * implementation("io.github.oothp:android-pdf-viewer:3.2.0-beta06")
 
 ## 3.2.0-beta05 (27 May 2025)
 
