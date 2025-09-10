@@ -166,6 +166,8 @@ public class PDFView extends RelativeLayout {
     /** Paint object for drawing */
     private Paint paint;
 
+    private Paint spacingPaint;
+
     /** Paint object for drawing debug stuff */
     private Paint debugPaint;
 
@@ -224,7 +226,7 @@ public class PDFView extends RelativeLayout {
             new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 
     /** Spacing between pages, in px */
-    private int spacingPx = 0;
+    private int spacingPx = 1;
 
     /** Add dynamic spacing to fit each page separately on the screen. */
     private boolean autoSpacing = false;
@@ -254,12 +256,17 @@ public class PDFView extends RelativeLayout {
         dragPinchManager = new DragPinchManager(this, animationManager);
         pagesLoader = new PagesLoader(this);
 
+
         paint = new Paint();
         debugPaint = new Paint();
         debugPaint.setStyle(Style.STROKE);
 
         pdfiumCore = new PdfiumCore(context);
         setWillNotDraw(false);
+
+        spacingPaint = new Paint();
+        spacingPaint.setColor(Color.LTGRAY);
+        spacingPaint.setStyle(Paint.Style.FILL);
     }
 
     private void load(DocumentSource docSource, String password) {
@@ -647,8 +654,35 @@ public class PDFView extends RelativeLayout {
 
         drawWithListener(canvas, currentPage, callbacks.getOnDraw());
 
+        // 绘制间距线/矩形
+        if (pdfFile != null && swipeVertical && pdfFile.getPagesCount() > 1 && spacingPx > 0) {
+            float currentY = 0;
+            for (int i = 0; i < pdfFile.getPagesCount(); i++) {
+                // 获取当前页面的高度
+                float pageHeight = pdfFile.getPageLength(i, zoom);
+
+                // 绘制间距矩形
+                if (i < pdfFile.getPagesCount() - 1) { // 最后一页后面不需要间距
+                    float spacingHeight = toCurrentScale(spacingPx);
+
+                    // 计算间距矩形的 Y 坐标
+                    float spacingY = pdfFile.getPageOffset(i, zoom) + toCurrentScale(pdfFile.getPageSize(i).getHeight());
+
+                    canvas.drawRect(
+                            0,                                         // left
+                            spacingY,                                  // top
+                            getWidth(),                                // right
+                            spacingY + spacingHeight,                  // bottom
+                            spacingPaint
+                    );
+                }
+            }
+        }
+
+
         // Restores the canvas position
         canvas.translate(-currentXOffset, -currentYOffset);
+
     }
 
     private void drawWithListener(Canvas canvas, int page, OnDrawListener listener) {
