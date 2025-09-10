@@ -656,23 +656,28 @@ public class PDFView extends RelativeLayout {
 
         // 绘制间距线/矩形
         if (pdfFile != null && swipeVertical && pdfFile.getPagesCount() > 1 && spacingPx > 0) {
-            float currentY = 0;
+            // 间距的高度，需要根据当前缩放比例进行绘制
+            float scaledSpacingHeight = toCurrentScale(spacingPx);
+
+            final  int viewWidth =  getWidth();
+            Log.d("PDFView_width",String.valueOf(viewWidth));
             for (int i = 0; i < pdfFile.getPagesCount(); i++) {
-                // 获取当前页面的高度
-                float pageHeight = pdfFile.getPageLength(i, zoom);
+                // 最后一页后面不需要间距
+                if (i < pdfFile.getPagesCount() - 1) {
+                    // 获取当前页面的偏移和缩放后的长度
+                    float pageOffset = pdfFile.getPageOffset(i, zoom);
+                    float pageHeight = pdfFile.getPageLength(i, zoom);
 
-                // 绘制间距矩形
-                if (i < pdfFile.getPagesCount() - 1) { // 最后一页后面不需要间距
-                    float spacingHeight = toCurrentScale(spacingPx);
+                    // 间距矩形的 Y 坐标应该位于当前页面的底部
+                    // 页面底部Y坐标 = 页面顶部Y坐标 + 页面高度
+                    float spacingY = pageOffset + pageHeight;
 
-                    // 计算间距矩形的 Y 坐标
-                    float spacingY = pdfFile.getPageOffset(i, zoom) + toCurrentScale(pdfFile.getPageSize(i).getHeight());
-
+                    // 绘制间距矩形
                     canvas.drawRect(
-                            0,                                         // left
-                            spacingY,                                  // top
-                            getWidth(),                                // right
-                            spacingY + spacingHeight,                  // bottom
+                            0,                                    // left
+                            spacingY,                             // top
+                            viewWidth,                           // right
+                            spacingY + scaledSpacingHeight,       // bottom
                             spacingPaint
                     );
                 }
